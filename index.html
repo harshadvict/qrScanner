@@ -13,10 +13,94 @@
             width: 60%;
             border: 2px solid #333232;
             padding: 10px;
+            border-radius: 10%;
+            position: relative;
+            height: 200px;
+        }
+
+        .sc {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .btn-pos {
-            margin-top: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-css {
+            display: inline-block;
+            outline: 0;
+            cursor: pointer;
+            text-align: center;
+            border: 0;
+            padding: 7px 16px;
+            min-height: 36px;
+            min-width: 36px;
+            color: #ffffff;
+            background: #008060;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 0px 0px, rgba(0, 0, 0, 0.2) 0px -1px 0px 0px inset;
+        }
+
+        .btn-css:hover {
+            background: #006e52;
+        }
+
+        .scan-div {
+            position: relative;
+            height: 70%;
+        }
+
+        .scan-div-child {
+            width: 10em;
+            text-align: center;
+            padding: 6px 2px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 20%;
+            margin: auto;
+            border: line .25em rgb(8, 8, 8);
+            transform: translate(-50%);
+        }
+
+        .scan-div-child::after {
+            content: '';
+            background: rgb(23, 162, 74);
+            width: 10.0em;
+            height: 0.15em;
+            display: block;
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            margin: auto;
+            opacity: 7;
+            z-index: 2;
+            animation: 2s infinite ease-in-out roll;
+        }
+
+        @keyframes roll {
+
+            0% {
+                transform: translateY(-1000%);
+            }
+
+            100% {
+                transform: translateY(-1000%);
+            }
+
+            50% {
+                transform: translateY(120%);
+            }
+
+            75% {
+                transform: translateY(2000%);
+            }
         }
     </style>
 </head>
@@ -28,20 +112,22 @@
     on selecting start need to start the scanner
     update the ui to make teh scanner responsive -->
 
-    <div id="scanner-container">
-        <video id="preview" width="100%" height="70%" style="display: none;"></video>
-        <div width="50%" height="50%" style="margin-left: 25%;">
-            <div>
-                <img src="https://cdn.yellowmessenger.com/UsSib5l6dMqH1640790771328.svg" id="scan-img" alt="image"
-                    width="70%" height="50%">
+    <div id="scanner-container" class="sc">
+        <div class="scan-div">
+            <div class="scan-div-child" width="110%" height="70%" style="background-color: rgb(0, 0, 0); display: none;"
+                id="scanner-div">
+                <video id="preview" width="100%" height="70%" class="scan-video-ch"></video>
             </div>
-            <button id="start-btn" class="btn-pos" onclick="startScanner();">
-                Start scanning
-            </button>
-            <button id="stop-btn" class="btn-pos" onclick="stopScanner();" style="display: none;">
-                Stop scanning
-            </button>
+            <img src="https://cdn.yellowmessenger.com/UsSib5l6dMqH1640790771328.svg" id="scan-img" alt="image"
+                width="95%" height="70%">
         </div>
+        <button id="start-btn" class="btn-pos btn-css" onclick="startScanner();">
+            Start scanning
+        </button>
+        <button id="stop-btn" class="btn-pos btn-css" onclick="stopScanner();" style="display: none;">
+            Stop scanning
+        </button>
+        <!-- </div> -->
     </div>
     <script type="text/javascript">
         let scannerTimeout;
@@ -59,7 +145,7 @@
                 clearTimeout(scannerTimeout);
             } else {
                 scannerTimeout = setTimeout(() => {
-                    document.getElementById('preview').style.display = 'none';
+                    document.getElementById('scanner-div').style.display = 'none'; //changing
                     document.getElementById('stop-btn').style.display = 'none';
                     document.getElementById('start-btn').style.display = 'block';
                     document.getElementById('scan-img').style.display = 'block';
@@ -74,14 +160,14 @@
             console.log(splittedData, 'splittedData')
             let finalDataToBeSend = [];
             await splittedData.forEach(element => {
-                element.slice(1,-1);
+                element.slice(1, -1);
                 element.trim()
                 let splitData = element.split(":");
                 var obj = {};
                 obj[splitData[0].trim()] = splitData[1].trim();
                 finalDataToBeSend.push(obj);
             });
-            console.log(finalDataToBeSend,'finalDataToBeSend')
+            console.log(finalDataToBeSend, 'finalDataToBeSend')
         }
         let scanner = new Instascan.Scanner(opts, {
             video: document.getElementById('preview')
@@ -90,7 +176,7 @@
             console.log(content);
             scanner.stop().then(() => {
                 clearTimeout(scannerTimeout);
-                document.getElementById('preview').style.display = 'none';
+                document.getElementById('scanner-div').style.display = 'none'; //changing
                 document.getElementById('stop-btn').style.display = 'none';
                 console.log('your content', content);
                 const div = document.getElementById("scanner-container");
@@ -107,10 +193,8 @@
         })
         startScanner = () => {
             //to handle the case when user start scanning
-            document.getElementById('preview').style.display = 'block';
             document.getElementById('stop-btn').style.display = 'block';
             document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('scan-img').style.display = 'none';
             Instascan.Camera.getCameras().then(function (cameras) {
                 console.log(cameras, 'cameras')
                 if (cameras.length > 0) {
@@ -118,6 +202,8 @@
                         scannerTimer('START');
                         let result = scanner.scan()
                         console.log(result, 'result')
+                        document.getElementById('scan-img').style.display = 'none';
+                        document.getElementById('scanner-div').style.display = 'block'; //changing
                     }).catch(() => {
                         console.error('camera not started');
                     });
@@ -131,7 +217,7 @@
 
         stopScanner = () => {
             //to handle the case when user stopped scanning
-            document.getElementById('preview').style.display = 'none';
+            document.getElementById('scanner-div').style.display = 'none'; //changing
             document.getElementById('stop-btn').style.display = 'none';
             document.getElementById('start-btn').style.display = 'block';
             document.getElementById('scan-img').style.display = 'block';
