@@ -10,12 +10,12 @@
     <style>
         #scanner-container {
             margin: auto;
-            width: 60%;
-            border: 2px solid #333232;
+            width: 80%;
+            border: 2px solid #8a8888;
             padding: 10px;
             border-radius: 10%;
             position: relative;
-            height: 200px;
+            height: 180px;
         }
 
         .sc {
@@ -34,11 +34,12 @@
             cursor: pointer;
             text-align: center;
             border: 0;
-            padding: 7px 16px;
+            padding: 7px 10px;
             min-height: 36px;
             min-width: 36px;
             color: #ffffff;
-            background: #008060;
+            background: rgb(0, 74, 128);
+            ;
             border-radius: 4px;
             font-weight: 500;
             font-size: 14px;
@@ -46,7 +47,8 @@
         }
 
         .btn-css:hover {
-            background: #006e52;
+            background: rgb(1, 58, 99);
+            ;
         }
 
         .scan-div {
@@ -102,6 +104,20 @@
                 transform: translateY(2000%);
             }
         }
+
+        #display-success {
+            min-height: 15px;
+            min-width: 36px;
+            border: 1px solid #D8D8D8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial;
+            font-size: 11px;
+            text-transform: uppercase;
+            background-color: rgb(236, 255, 216);
+            color: green;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -114,12 +130,16 @@
 
     <div id="scanner-container" class="sc">
         <div class="scan-div">
-            <div class="scan-div-child" width="110%" height="70%" style="background-color: rgb(0, 0, 0); display: none;"
+            <div class="scan-div-child" width="90%" height="70%" style="background-color: rgb(0, 0, 0); display: none;"
                 id="scanner-div">
-                <video id="preview" width="100%" height="70%" class="scan-video-ch"></video>
+                <video id="preview" width="90%" height="70%" class="scan-video-ch"></video>
             </div>
-            <img src="https://cdn.yellowmessenger.com/UsSib5l6dMqH1640790771328.svg" id="scan-img" alt="image"
-                width="95%" height="70%">
+            <img src="https://cdn.yellowmessenger.com/lveYQviw9kBB1640869834638.png" id="scan-img" alt="image"
+                width="95%" height="70%" style="padding-top: 15px;">
+            <!-- <img src="https://cdn.yellowmessenger.com/UsSib5l6dMqH1640790771328.svg" id="scan-img" alt="image"
+                width="95%" height="70%"> -->
+            <img src="https://cdn.yellowmessenger.com/SFtKT03zPKPp1640867454033.png" id="scan-img-comp"
+                style="display: none;" alt="image" width="95%" height="70%">
         </div>
         <button id="start-btn" class="btn-pos btn-css" onclick="startScanner();">
             Start scanning
@@ -127,6 +147,9 @@
         <button id="stop-btn" class="btn-pos btn-css" onclick="stopScanner();" style="display: none;">
             Stop scanning
         </button>
+        <div id="display-success" style="display: none;">
+            QR scanned succesfully!!
+        </div>
         <!-- </div> -->
     </div>
     <script type="text/javascript">
@@ -167,7 +190,21 @@
                 obj[splitData[0].trim()] = splitData[1].trim();
                 finalDataToBeSend.push(obj);
             });
-            console.log(finalDataToBeSend, 'finalDataToBeSend')
+            console.log(finalDataToBeSend, 'finalDataToBeSend');
+            //sending event to the bot
+            window.parent.postMessage(JSON.stringify({
+                event_code: 'ym-client-event',
+                data: {
+                    event: {
+                        code: "policy-qr-scanned",
+                        data: {
+                            policyDetails: finalDataToBeSend
+                        },
+                        message: finalDataToBeSend,
+                        medium: "message"
+                    }
+                }
+            }), '*');
         }
         let scanner = new Instascan.Scanner(opts, {
             video: document.getElementById('preview')
@@ -180,8 +217,10 @@
                 document.getElementById('stop-btn').style.display = 'none';
                 console.log('your content', content);
                 const div = document.getElementById("scanner-container");
-                console.log(typeof content)
-                div.innerHTML = content;
+                console.log(typeof content);
+                document.getElementById('scan-img-comp').style.display = 'block';
+                document.getElementById('display-success').style.display = 'block';
+                //div.innerHTML = content;
                 formatQrData(content); //pasing data to format
             })
         });
